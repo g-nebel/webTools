@@ -6,26 +6,76 @@
 <meta name="author" content="Georg Nebel">
     <title>Timer</title>
 <style>
-p {
+p.timer, p.timer-msg {
   text-align: center;
   font-size: 60px;
-  margin-top: 0px;
+  margin: 0px auto;
+  max-width:540px;
 }
+.help {
+	display: none;
+	max-width:540px;
+	margin: 0 auto;
+}
+.help-de { display: none; }
+.help-en { display: block; }
+.lang-de .help-de { display: block; }
+.lang-de .help-en { display: none; }
 </style>
 </head>
 <body>
 
 <p id="timer" class="timer">00:00:00</p>
 <p id="msg"class="timer-msg"></p>
+<div class="help">
+	<div class="help-en">
+		<h2>Timer</h2>
+		<p>The time is given in hours: minutes: seconds.</p>
+		<h3>Key Commands</h3>
+		<ul>
+		<li>Space or Enter Taste: Start, Stop</li>
+		<li>Backspace: Delete input</li>
+		<li>Numbers: Enter digit (fill up from the right)</li>
+		<li>F1: Help</li>
+		</ul>
+		<h3>Mouse</h3>
+		<ul>
+			<li>Click on time: Start, Stop</li>
+			<li>Hover over time: Help</li>
+		</ul>
+		<p>If the timer is started with 00:00:00 the timer runs as a stop watch otherwise as a timer with alarm at 00:00:00.</p>
+		<p>The timer can be reset by reloading at any time (F5).</p>
+	</div>
+	<div class="help help-de">
+		<h2>Timer</h2>
+		<p>Die Zeit wird in Stunden : Minuten : Sekunden angegeben.</p>
+		<h3>Tastenbefehle</h3>
+		<ul>
+		<li>Leertaste oder Enter Taste: Start, Stop</li>
+		<li>Rücktaste: Eingabe löschen</li>
+		<li>Ziffern:  Ziffer eingeben (von rechts auffüllen)</li>
+		<li>F1: Hilfe</li>
+		</ul>
+		<h3>Maus</h3>
+		<ul>
+			<li>Klick auf Zeit: Start, Stop</li>
+			<li>Maus über der Zeit: Hilfe</li>
+		</ul>
+		<p>Wenn der Timer mit 00:00:00 gestartet wird läuft der Timer als Stopuhr ansonsten als Timer mit Alarm bei 00:00:00.</p>
+		<p>Der Timer kann auch jederzeit neu laden (F5) zurück gesetzt werden.</p>
+	</div>
+</div>
 <!--
 <audio id="alarm" src="whatever_you_want.mp3" preload="auto"></audio>
 -->
 <script>
+	const lang = navigator.language.substring(0,2);
     const body = document.querySelector('body');
     const timer = document.querySelector('.timer');
     const timerMsg = document.querySelector('.timer-msg');
+    const help = document.querySelector('.help');
     const digits = "0123456789";
-    const actKeys = ["Enter","Backspace"," "];
+    const actKeys = ["Enter","Backspace"," ","F1"];
     var timerms = 0;
     var countDownDate = new Date().getTime() + timerms;
     var alarmAct = timerms!=0 ? false : true;
@@ -38,10 +88,37 @@ p {
     var running = false;
     var timerInt, beepsInt,beepInt;
     var regTimer = /^(([0-1][0-9])|(2[0-3])):[0-5][0-9]:[0-5][0-9]$/i;
+    body.classList.add("lang-" + lang);
+
+    timer.onmouseenter = function(e){
+    	help.style.display = 'block';
+    }
+    timer.onmouseleave = function(e){
+	    help.style.display = 'none';
+    }
+    timer.onclick = function(e){
+		keyStr = "000000";
+		if(! running){
+			if(timeStr.match(regTimer)) {
+				timerMsg.innerHTML = "";
+				timerStart();
+				running = true;
+			}else {
+				timerMsg.innerHTML = "ERROR";
+			}
+		}else {
+			timerMsg.innerHTML = "";
+			clearInterval(timerInt);
+			clearInterval(beepInt);
+			clearInterval(beepsInt);
+			timer.style.color = "#000000";
+			running = false;
+		}
+    }
     body.onkeydown = function(e) {
+          //       timerMsg.innerHTML = ">" + e.key + "< - " + e.code;
         if (!e.metaKey &&  (digits.includes(e.key) || actKeys.includes(e.key))) {
             e.preventDefault();
-            // keycodeDisplay.innerHTML = ">" + e.key + "< - " + e.code;
 
             if( digits.includes(e.key) && running == false){
                 keyStr = keyStr + e.key;
@@ -72,6 +149,8 @@ p {
                     timer.style.color = "#000000";
                     running = false;
                 }
+            }else if(e.key == "F1") {
+            	help.style.display = 'block';
             }
         }
         // drawNumberToCanvas(e.keyCode);
